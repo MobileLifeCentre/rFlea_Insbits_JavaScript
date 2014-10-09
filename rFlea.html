@@ -4,7 +4,9 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<title>rFlea example</title> 
 		<meta name="viewport" content="width=device-width, initial-scale=1"> 
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+		<link rel="stylesheet" href="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.css" />
+		<script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+		<script type="text/javascript" src="js/sb-1.3.4.js"></script>
 		<script type="text/javascript" src="rflea.js"></script>
 	</head>
 	<body>
@@ -12,5 +14,107 @@
 		<div id="rFlea">
 			Trying to connect…
 		</div>
+		<script type="text/javascript">
+		
+		var sb
+			, app_name = "rFlea example"
+			, values = {};
+			
+		function setupSpacebrew (app_name) {
+			app_name = app_name;
+
+			console.log("Setting up spacebrew connection");
+			sb = new Spacebrew.Client();
+									
+			sb.name(app_name);
+
+			sb.description(" rFlea module Library examples");
+
+			// configure the publication and subscription feeds
+			sb.addPublish("analog_A4", "range", "500");
+			sb.addPublish("analog_A5", "range", "500");
+			sb.addPublish("digital_3", "range", "500");
+			sb.addPublish("digital_10", "range", "500");
+			sb.addPublish("digital_11", "range", "500");
+			sb.addPublish("digital_12", "range", "500");
+			
+			sb.addSubscribe("LED", "range");
+			
+			// override Spacebrew events - this is how you catch events coming from Spacebrew
+			sb.onRangeMessage = onRangeMessage;
+
+			// override Spacebrew events - this is how you catch events coming from Spacebrew
+			sb.onOpen = onOpen;
+			sb.onClose = onClose;
+
+			// connect to spacbrew
+			sb.connect();
+
+		};
+		/**
+		 * onRangeMessage Function that is called whenever new spacebrew range messages are received.
+		 * 				  It accepts two parameters:
+		 * @param  {String} name  	Holds name of the subscription feed channel
+		 * @param  {Integer} value 	Holds value received from the subscription feed
+		 */
+		function onRangeMessage(name, value){
+			if(name=="LED"){ //We have received something for our pin 13LED in rFlea. Store it in LED variable for future sending in next 
+				LED_value=Math.floor(value);
+				if (LED_value>255) LED_value=255;
+			}
+		};
+
+		function onOpen() {
+		}
+
+		function onClose() {
+		}
+		//Funtion called when the APP is being closed
+		function onExit() {
+			sb.close();
+		}
+		
+		
+		/**
+		 * onrFleaMessage Function that is called whenever new rFlea data messages are received.
+		 *		You can use this function to send you date back to rFlea. rFeaSend().
+		 * 				  It accepts one parameters:
+		 * @param  {rFlea} 	rFleaData.message[] array of size 8 with the 8 data fields
+		 *					rFleaData.MAC[] array of size 2 with the unique ID of the connected rFlea
+		 */
+		function onrFleaMessage(rFleaData){
+		outputData(rFleaData);
+		
+		//If spacebrew is not connected and set up, do it now
+		if (sb == undefined) {
+			setupSpacebrew("rFlea "+ rFleaMAC);
+			AndroidInterface.showToast("Space brew OPEN");
+		}
+		//We send the data to SPACEBREW
+		//the 2 first data fields are analog signals
+		sb.send("analog_A4", "range", String(rFleaData.message[0]));
+		sb.send("analog_A5", "range", String(rFleaData.message[1]));
+		//Then, we have 4 digital inputs
+		sb.send("digital_3", "range", String(rFleaData.message[2]));
+		sb.send("digital_10", "range", String(rFleaData.message[3]));
+		sb.send("digital_11", "range", String(rFleaData.message[4]));
+		sb.send("digital_12", "range", String(rFleaData.message[5]));
+
+		//Now is time to send our DATA. Fill each of the fields with your data. Values form 0 to 255!
+		rFleaSend(LED_value,1,2,3,4,5,6,7); //returns true if format is correct
+											//Sends the Value of LED subscriber in the first data field
+											//The rest of data fields are just fixed numbers
+		};
+		
+		
+		//Functions that writes in the html plain text the data
+		function outputData(data) {
+				var output = "Data package #" + packagesReceived + " received from rFlea #" + rFleaMAC + ": <br/>";
+				for (var i = 0; i < data.message.length; i++) {
+				output += "data" + i + ": " + data.message[i] + "<br/>";
+			}
+			$("#rFlea").html(output);
+		}
+		</script>
 	</body>
 </html>
