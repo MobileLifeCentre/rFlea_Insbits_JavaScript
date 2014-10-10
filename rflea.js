@@ -104,7 +104,7 @@ function toHex(val) {
 function rFleaSend(data0,data1,data2,data3,data4,data5,data6,data7){
 	var tx_message = toString(data0,data1,data2,data3,data4,data5,data6,data7);
 	var tx_successful = AntInterface.send(tx_message); //returns true if format is correct
-	if (true) AndroidInterface.showToast(tx_message, tx_successful);
+	if (debug) AndroidInterface.showToast(tx_message, tx_successful);
 }
 
 function toString(a,b,c,d,e,f,g,h){
