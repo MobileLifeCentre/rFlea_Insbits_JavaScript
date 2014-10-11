@@ -24,8 +24,9 @@
 			app_name = app_name;
 
 			console.log("Setting up spacebrew connection");
+
 			sb = new Spacebrew.Client();
-									
+						
 			sb.name(app_name);
 
 			sb.description(" rFlea module Library examples");
@@ -87,7 +88,8 @@
 		
 		//If spacebrew is not connected and set up, do it now
 		if (sb == undefined) {
-			setupSpacebrew("rFlea "+ rFleaMAC);
+			AndroidInterface.showToast("rFlea found with ID: "+rFleaData.MAC);
+			setupSpacebrew("rFlea "+rFleaData.MAC);
 			AndroidInterface.showToast("Space brew OPEN");
 		}
 		//We send the data to SPACEBREW
@@ -109,7 +111,7 @@
 		
 		//Functions that writes in the html plain text the data
 		function outputData(data) {
-				var output = "Data package #" + packagesReceived + " received from rFlea #" + rFleaMAC + ": <br/>";
+				var output = "Data package #" + packagesReceived + " received from rFlea #" + data.MAC + ": <br/>";
 				for (var i = 0; i < data.message.length; i++) {
 				output += "data" + i + ": " + data.message[i] + "<br/>";
 			}
